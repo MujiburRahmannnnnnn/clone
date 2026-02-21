@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Shopping</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+*{margin:0;box-sizing:border-box;font-family:Arial;}
+body{background:#eaeded;}
+
+.navbar{
+height:60px;
+background:#131921;
+color:white;
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:0 20px;
+}
+
+.brand{color:#febd68;font-weight:bold;font-size:20px;cursor:pointer}
+
+.nav-right{display:flex;gap:20px;align-items:center;cursor:pointer}
+
+.hero{
+background:url('https://m.media-amazon.com/images/I/61lwJy4B8PL._SX3000_.jpg');
+height:300px;
+background-size:cover;
+background-position:center;
+}
+
+#mainContainer{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:20px;
+padding:20px;
+margin-top:-100px;
+}
+
+.card{
+background:white;
+padding:15px;
+border-radius:6px;
+box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+
+.card-img{
+height:200px;
+background-size:cover;
+background-position:center;
+border-radius:5px;
+margin:10px 0;
+}
+
+.price{color:#B12704;font-weight:bold;margin:8px 0;}
+
+.btn{
+background:#ffd814;
+border:none;
+padding:8px;
+border-radius:20px;
+cursor:pointer;
+font-weight:bold;
+width:100%;
+}
+
+#cartView{
+display:none;
+background:white;
+padding:30px;
+margin:20px;
+border-radius:8px;
+}
+
+.modal{
+display:none;
+position:fixed;
+top:0;left:0;
+width:100%;height:100%;
+background:rgba(0,0,0,0.7);
+justify-content:center;
+align-items:center;
+}
+
+.signup-box{
+background:white;
+padding:25px;
+border-radius:8px;
+width:300px;
+}
+
+.signup-box input{
+width:100%;
+padding:8px;
+margin:8px 0;
+border:1px solid #ccc;
+border-radius:4px;
+}
+
+footer{
+background:#232f3e;
+color:white;
+text-align:center;
+padding:20px;
+margin-top:40px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="navbar">
+<div class="brand" onclick="loadHome()">Smart Shopping</div>
+<div class="nav-right">
+<div onclick="openSignup()">Signup</div>
+<div onclick="showCart()"><i class="fa-solid fa-cart-shopping"></i> <span id="count">0</span></div>
+</div>
+</div>
+
+<div class="hero"></div>
+<div id="mainContainer"></div>
+
+<div id="cartView">
+<h2>Your Cart</h2>
+<div id="cartItems"></div>
+<h3 id="totalPrice"></h3>
+<br>
+<button class="btn" onclick="loadHome()">Back to Home</button>
+</div>
+
+<!-- Signup -->
+<div class="modal" id="signupModal">
+<div class="signup-box">
+<h3>Create Account</h3>
+<form action="https://docs.google.com/forms/d/e/1FAIpQLSd51buHAfB3YXIgIcmCQorvEyFWSz1yKXNs28hmn9huqpG2hA/formResponse"
+method="POST"
+target="hidden_iframe"
+onsubmit="setTimeout(closeSignup,800);">
+<input name="entry.2005620554" placeholder="Name" required>
+<input name="entry.1045781291" placeholder="Email" required>
+<input name="entry.1166974658" placeholder="Phone" required>
+<button class="btn" type="submit">Sign Up</button>
+</form>
+<br>
+<button class="btn" onclick="closeSignup()">Close</button>
+</div>
+</div>
+
+<iframe name="hidden_iframe" style="display:none;"></iframe>
+
+<footer>© 2026 Smart Shopping</footer>
+
+<script>
+
+let cart=[];
+const container=document.getElementById("mainContainer");
+
+const products=[
+
+// JEANS (10)
+{ name:"Levi's Slim",cat:"jeans",price:2999,img:"https://images.unsplash.com/photo-1542272604-787c3835535d?w=400"},
+{ name:"Wrangler Grey",cat:"jeans",price:2199,img:"https://images.unsplash.com/photo-1582552938357-32b906df40cb?w=400"},
+{ name:"Black Ripped",cat:"jeans",price:1899,img:"https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=400"},
+{ name:"Blue Stretch",cat:"jeans",price:2499,img:"https://images.unsplash.com/photo-1604176354204-926873ff3da9?w=400"},
+{ name:"Vintage Denim",cat:"jeans",price:2799,img:"https://images.unsplash.com/photo-1514312884399-3c5d882f1f11?w=400"},
+{ name:"Skinny Fit",cat:"jeans",price:1999,img:"https://images.unsplash.com/photo-1555689502-c4b22d76c56f?w=400"},
+{ name:"Loose Fit",cat:"jeans",price:2599,img:"https://images.unsplash.com/photo-1565084888279-aff9969671fb?w=400"},
+{ name:"High Rise",cat:"jeans",price:1899,img:"https://images.unsplash.com/photo-1584305116359-1981037f3ff1?w=400"},
+{ name:"Dark Indigo",cat:"jeans",price:2299,img:"https://images.unsplash.com/photo-1560243563-062bff001d68?w=400"},
+{ name:"Classic Blue",cat:"jeans",price:2100,img:"https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=400"},
+
+// SHOES (10)
+{ name:"Nike Air Max",cat:"shoes",price:8999,img:"https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400"},
+{ name:"Adidas Ultraboost",cat:"shoes",price:14999,img:"https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=400"},
+{ name:"Puma Sneakers",cat:"shoes",price:3999,img:"https://images.unsplash.com/photo-1531310197839-ccf54634509e?w=400"},
+{ name:"Vans Classic",cat:"shoes",price:4500,img:"https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=400"},
+{ name:"Converse Chucks",cat:"shoes",price:3500,img:"https://images.unsplash.com/photo-1494496195158-c3becb4f2475?w=400"},
+{ name:"Reebok Classic",cat:"shoes",price:5999,img:"https://images.unsplash.com/photo-1595341888016-a392ef81b7de?w=400"},
+{ name:"Red Tape Leather",cat:"shoes",price:2199,img:"https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?w=400"},
+{ name:"Casual Sneakers",cat:"shoes",price:1299,img:"https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=400"},
+{ name:"Running Shoes",cat:"shoes",price:4999,img:"https://images.unsplash.com/photo-1539185441755-769473a23570?w=400"},
+{ name:"Formal Shoes",cat:"shoes",price:3999,img:"https://images.unsplash.com/photo-1610395219796-3b7f8b4d5a13?w=400"},
+
+// ELECTRONICS (10)
+{ name:"Headphones",cat:"electronics",price:1999,img:"https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400"},
+{ name:"Smart Watch",cat:"electronics",price:4999,img:"https://images.unsplash.com/photo-1511732351149-5f0e3c8c1b57?w=400"},
+{ name:"Laptop",cat:"electronics",price:55999,img:"https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400"},
+{ name:"Bluetooth Speaker",cat:"electronics",price:2999,img:"https://images.unsplash.com/photo-1585386959984-a41552231658?w=400"},
+{ name:"Camera",cat:"electronics",price:35999,img:"https://images.unsplash.com/photo-1519183071298-a2962eadc7d1?w=400"},
+{ name:"Gaming Mouse",cat:"electronics",price:1499,img:"https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=400"},
+{ name:"Keyboard",cat:"electronics",price:999,img:"https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400"},
+{ name:"Power Bank",cat:"electronics",price:1199,img:"https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=400"},
+{ name:"Tablet",cat:"electronics",price:19999,img:"https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=400"},
+{ name:"LED Monitor",cat:"electronics",price:12999,img:"https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=400"},
+
+// BEAUTY (10)
+{ name:"Makeup Kit",cat:"beauty",price:1499,img:"https://images.unsplash.com/photo-1586776977607-310e9c725c37?w=400"},
+{ name:"Lipstick",cat:"beauty",price:499,img:"https://images.unsplash.com/photo-1583001809873-a128495da465?w=400"},
+{ name:"Perfume",cat:"beauty",price:1999,img:"https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400"},
+{ name:"Face Wash",cat:"beauty",price:299,img:"https://images.unsplash.com/photo-1606813902913-4f8a8d5f8d9e?w=400"},
+{ name:"Hair Dryer",cat:"beauty",price:1299,img:"https://images.unsplash.com/photo-1585238342028-4b6a8c4c7b1e?w=400"},
+{ name:"Nail Polish",cat:"beauty",price:199,img:"https://images.unsplash.com/photo-1600180758890-6b94519a8ba0?w=400"},
+{ name:"Skin Care Kit",cat:"beauty",price:2499,img:"https://images.unsplash.com/photo-1588776814546-ec7e29f1d7d8?w=400"},
+{ name:"Face Cream",cat:"beauty",price:599,img:"https://images.unsplash.com/photo-1596464716127-f2a82984de30?w=400"},
+{ name:"Shampoo",cat:"beauty",price:399,img:"https://images.unsplash.com/photo-1606813902913-4f8a8d5f8d9e?w=400"},
+{ name:"Body Lotion",cat:"beauty",price:699,img:"https://images.unsplash.com/photo-1596464716127-f2a82984de30?w=400"}
+
+];
+
+function loadHome(){
+document.getElementById("cartView").style.display="none";
+container.style.display="grid";
+
+container.innerHTML=`
+<div class="card" onclick="filter('jeans')"><h2>Denim Jeans</h2><div class="card-img" style="background-image:url('https://images.unsplash.com/photo-1542272604-787c3835535d?w=400')"></div></div>
+<div class="card" onclick="filter('shoes')"><h2>Premium Shoes</h2><div class="card-img" style="background-image:url('https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400')"></div></div>
+<div class="card" onclick="filter('electronics')"><h2>Electronics</h2><div class="card-img" style="background-image:url('https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400')"></div></div>
+<div class="card" onclick="filter('beauty')"><h2>Beauty</h2><div class="card-img" style="background-image:url('https://images.unsplash.com/photo-1586776977607-310e9c725c37?w=400')"></div></div>
+`;
+}
+
+function filter(category){
+container.innerHTML="";
+let filtered=products.filter(p=>p.cat===category);
+
+filtered.forEach(p=>{
+container.innerHTML+=`
+<div class="card">
+<div class="card-img" style="background-image:url('${p.img}')"></div>
+<h3>${p.name}</h3>
+<p class="price">₹${p.price}</p>
+<button class="btn" onclick="addToCart('${p.name}',${p.price})">Add to Cart</button>
+</div>
+`;
+});
+}
+
+function addToCart(name,price){
+cart.push({name,price});
+document.getElementById("count").innerText=cart.length;
+}
+
+function showCart(){
+container.style.display="none";
+document.getElementById("cartView").style.display="block";
+
+document.getElementById("cartItems").innerHTML=
+cart.map(i=>`<div>${i.name} - ₹${i.price}</div>`).join("");
+
+let total=cart.reduce((s,i)=>s+i.price,0);
+document.getElementById("totalPrice").innerText="Total: ₹"+total;
+}
+
+function openSignup(){
+document.getElementById("signupModal").style.display="flex";
+}
+
+function closeSignup(){
+document.getElementById("signupModal").style.display="none";
+}
+
+loadHome();
+
+</script>
+
+</body>
+</html>
